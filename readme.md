@@ -13,4 +13,4 @@ node app.js
 
 ## Screenshot
 
-![Screenshot of UI](public/screenshot.png)
+![Screenshot of UI](screenshot.png)
