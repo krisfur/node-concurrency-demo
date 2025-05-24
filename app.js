@@ -66,7 +66,7 @@ app.get('/internal', (req, res) => {
       transformed: reversed,
       length: input.length
     });
-  }, 50); // Still keep a small delay to simulate latency
+  }, 0); // adjust value to add a delay for simulating latency if needed
 });
 
 app.get('/concurrent', async (req, res) => {
