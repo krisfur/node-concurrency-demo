@@ -12,40 +12,40 @@ const sqlite3 = require('sqlite3').verbose();
 
 const DB_FILE = './data.db';
 
-function initDatabase() {
-  // Delete existing DB to start clean every time
-  if (fs.existsSync(DB_FILE)) {
-    fs.unlinkSync(DB_FILE);
-    console.log('Old database removed.');
+// set up knex
+const knex = require('knex')({
+  client: 'sqlite3',
+  connection: {
+    filename: './data.db'
+  },
+  useNullAsDefault: true
+});
+
+// init the DB with knex for sqlite
+async function initDatabase() {
+  const exists = await knex.schema.hasTable('items');
+  if (exists) {
+    await knex.schema.dropTable('items');
   }
 
-  const db = new sqlite3.Database(DB_FILE);
-  console.log('Database created.')
-  db.serialize(() => {
-    db.run(`
-      CREATE TABLE items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )
-    `);
-    db.run(`INSERT INTO items (name) VALUES ('Crab'), ('Octopus'), ('Lobster')`);
+  await knex.schema.createTable('items', (table) => {
+    table.increments('id').primary();
+    table.string('name');
   });
-  db.close();
-  console.log('Database preseeded.')
+
+  await knex('items').insert([
+    { name: 'Crab' },
+    { name: 'Octopus' },
+    { name: 'Lobster' }
+  ]);
 }
 
 initDatabase(); // call it once on startup
 
 
-function databaseCall() {
-  return new Promise((resolve, reject) => {
-    const db = new sqlite3.Database(DB_FILE);
-    db.all("SELECT * FROM items", [], (err, rows) => {
-      db.close();
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+async function databaseCall() {
+  const rows = await knex('items').select('*');
+  return rows;
 }
 
 async function callDummyAPI() {
