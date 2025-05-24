@@ -55,9 +55,18 @@ async function callDummyAPI() {
 }
 
 app.get('/internal', (req, res) => {
+  const input = req.query.text || 'default text';
+
+  // Simulate some processing
   setTimeout(() => {
-    res.json({ message: 'Internal response' });
-  }, 50);
+    const reversed = input.split('').reverse().join('').toUpperCase();
+
+    res.json({
+      original: input,
+      transformed: reversed,
+      length: input.length
+    });
+  }, 50); // Still keep a small delay to simulate latency
 });
 
 app.get('/concurrent', async (req, res) => {
@@ -80,7 +89,8 @@ app.get('/concurrent', async (req, res) => {
 
     const internalPromise = (async () => {
       const start = performance.now();
-      const result = await fetch(`http://localhost:${PORT}/internal`).then(r => r.json());
+      const internalInput = 'knex rocks'; // or dynamically pick something
+      const result = await fetch(`http://localhost:${PORT}/internal?text=${encodeURIComponent(internalInput)}`).then(r => r.json());
       benchmark.internal = (performance.now() - start).toFixed(2);
       return result;
     })();
